@@ -9,7 +9,7 @@
 
 # Screenshots
 <img src="https://s14.postimg.org/nerjpjatt/echeck.jpg" width="55%"></img>
-<img src="https://s14.postimg.org/sz4108ua9/echeck2.jpg" width="25%"></img><img src="https://s14.postimg.org/4vd9byjj5/echeck3.jpg" width="25%"></img>
+* <img src="https://s14.postimg.org/sz4108ua9/echeck2.jpg" width="25%"></img><img src="https://s14.postimg.org/4vd9byjj5/echeck3.jpg" width="25%"></img>
 
 # Requirements
 
