@@ -193,10 +193,9 @@ cat $nplog | grep "Pipe Found:" | awk '{print$4}' | sed 's/[\PIPE\]//g' | tr "" 
 else
 echo -e "$okegreen""* - Unable to find aditional smbpipes"
 fi
-exit 1
-
 srvstop	
 }	
+
 smbtouch () {
 cp "$stskl" "$stout"
 sed -i -e "s/RHOST/$rhost/g" $stout
