@@ -54,10 +54,12 @@ echo -e "$orange" "Eternal Check $vers just started"
 }
 
 delf () {
+rm -rf "$nplog" >/dev/null 2>&1
 rm -rf "$npout" >/dev/null 2>&1	
 rm -rf "$stout" >/dev/null 2>&1	
 rm -rf "$log" >/dev/null 2>&1	
 rm -rf "$stlog" >/dev/null 2>&1	
+rm -rf "$nmplog" >/dev/null 2>&1
 }
 
 chkfls () {
@@ -163,16 +165,6 @@ echo -e "$yellow" "Try : apt-get install winbind"
 exit 1
 fi 
 sleep 0.5
-which nmap > /dev/null 2>&1
-      if [ "$?" -eq "1" ]; then
-      echo "[$red x$okegreen ] Not Ok "
-      echo ""
-   echo -e "$red" "Nmap Missing"
-echo ""
-echo -e "$yellow" "Try : apt-get install nmap"
-exit 1
-fi 
-sleep 0.5
 echo "[✔] Ok "
 sleep 2
 }
@@ -201,6 +193,8 @@ cat $nplog | grep "Pipe Found:" | awk '{print$4}' | sed 's/[\PIPE\]//g' | tr "" 
 else
 echo -e "$okegreen""* - Unable to find aditional smbpipes"
 fi
+exit 1
+
 srvstop	
 }	
 smbtouch () {
@@ -210,7 +204,7 @@ echo ""
 tools="cd $path/tools"
 echo -e "$orange""* - Launching Smbtouch on $okegreen $rhost"
 $tools
-st=$(timeout 6s wine Smbtouch-1.1.1.exe)
+st=$(timeout 10s wine Smbtouch-1.1.1.exe)
 echo "$st" > "$stlog"
 sbosl=$(grep -n "Target OS" < $stlog | tr ":" "\n" | sed -n 1p)
 osvar=$((sbosl+1))
@@ -276,7 +270,7 @@ namedpipe
 
 
 target () {
-echo -ne "$okegreen""Enter IP to check :$yellow ";tput sgr0
+echo -ne "$okegreen" "Enter IP to check :$yellow ";tput sgr0
 read -r rhost
 inv=$(echo "$rhost" | grep [a-zA-Z] )
 if [[ ! -z "$inv" ]]
