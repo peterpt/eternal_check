@@ -1,0 +1,301 @@
+#!/bin/bash
+#######################################################
+# Eternal Check                                       # 
+# Denveloped by peterpt at http://github.com/peterpt  #
+#######################################################
+
+# Eternal check verifies if a supposed ip is vulnerable to
+# Eternal Blue / Eternal Romance / Eternal Champion / Eternal Synergy
+# Smb Vulnerabily 
+# https://www.rapid7.com/db/vulnerabilities/msft-cve-2017-0145
+# https://www.rapid7.com/db/modules/exploit/windows/smb/ms17_010_eternalblue
+# Colours
+cyan='\e[0;36m'
+green='\e[0;34m'
+okegreen='\033[92m'
+lightgreen='\e[1;32m'
+white='\e[1;37m'
+red='\e[1;31m'
+yellow='\e[0;33m'
+BlueF='\e[1;34m' #Biru
+RESET="\033[00m" #normal
+orange='\e[38;5;166m'
+#   --------------Variables------------------
+vers="1.0"
+path=$(pwd)
+tools="cd $path/tools"
+
+# Output Logs
+log="$path/log"
+nmplog="$path/nmlog"
+nplog="$path/npout"   # Named Pipe
+stlog="$path/stout"   # SMB Touch
+# End logs
+
+# Main skeletons
+npskl="$path/xml/Namedpipetouch-2.0.0.Skeleton.xml"
+stskl="$path/xml/Smbtouch-1.1.1.Skeleton.xml"
+# End Skeletons
+
+# Fuzzbunch Executables
+npexe="$path/tools/Namedpipetouch-2.0.0.exe"
+stexe="$path/tools/Smbtouch-1.1.1.exe"
+# End Executables
+
+# Out Config
+npout="$path/tools/Namedpipetouch-2.0.0.xml"
+stout="$path/tools/Smbtouch-1.1.1.xml"
+# End Out Config
+
+#   ---------END--------VARIABLES-------------------
+
+intro () {
+echo -e "$orange" "Eternal Check $vers just started"
+}
+
+delf () {
+rm -rf "$npout" >/dev/null 2>&1	
+rm -rf "$stout" >/dev/null 2>&1	
+rm -rf "$log" >/dev/null 2>&1	
+rm -rf "$stlog" >/dev/null 2>&1	
+}
+
+chkfls () {
+	
+if [[ ! -f "$npexe" ]]
+then
+echo "Incomplete package , (namedpipe exe) missing"
+exit 1
+elif [[ ! -f "$stexe" ]]
+then
+echo "Incomplete package , (smbtouch exe) missing"
+exit 1
+elif [[ ! -f "$npskl" ]]
+then
+echo "Incomplete package , (namedpipe skl) missing"
+exit 1
+elif [[ ! -f "$stskl" ]]
+then
+echo "Incomplete package , (smbtouch skl) missing"
+exit 1
+fi
+
+}
+
+logo (){
+echo ""
+echo -e "$orange""******************************************"
+echo -e "$orange""*$okegreen  ▄▄▄ .▄▄▄▄▄▄▄▄ .▄▄▄   ▐ ▄  ▄▄▄· ▄▄▌$orange    *"
+echo -e "$orange""*$okegreen  ▀▄.▀·•██  ▀▄.▀·▀▄ █·•█▌▐█▐█ ▀█ ██• $orange   *"
+echo -e "$orange""*$okegreen  ▐▀▀▪▄ ▐█.▪▐▀▀▪▄▐▀▀▄ ▐█▐▐▌▄█▀▀█ ██▪  $orange  *"
+echo -e "$orange""*$okegreen  ▐█▄▄▌ ▐█▌·▐█▄▄▌▐█•█▌██▐█▌▐█ ▪▐▌▐█▌▐▌$orange  *"
+echo -e "$orange""*$okegreen   ▀▀▀  ▀▀▀  ▀▀▀ .▀  ▀▀▀ █▪ ▀  ▀ .▀▀▀ $orange  *"
+echo -e "$orange""*$okegreen       ▄▄·  ▄ .▄▄▄▄ . ▄▄· ▄ •▄        $orange  *"
+echo -e "$orange""*$okegreen      ▐█ ▌▪██▪▐█▀▄.▀·▐█ ▌▪█▌▄▌▪        $orange *"
+echo -e "$orange""*$okegreen      ██ ▄▄██▀▐█▐▀▀▪▄██ ▄▄▐▀▀▄·        $orange *"
+echo -e "$orange""*$okegreen      ▐███▌██▌▐▀▐█▄▄▌▐███▌▐█.█▌        $orange *"
+echo -e "$orange""*$okegreen      ·▀▀▀ ▀▀▀ · ▀▀▀ ·▀▀▀ ·▀  ▀  $yellow $vers$orange   *" 
+echo -e "$orange""******************************************"
+echo -e "$orange""*$okegreen      http://github.com/peterpt         $orange*"
+echo -e "$orange""******************************************"
+}
+
+# Required Services start
+servstart () {
+echo ""
+echo -e "$okegreen""Searching for required activated services"
+winbservice="winbind"
+if (( $(ps -ef | grep -v grep | grep $winbservice | wc -l) > 0 ))
+then
+echo -e "$okegreen""$winbservice is running!!!"
+else
+echo -e "$okegreen""Starting Winbind Service"
+/etc/init.d/$winbservice start >/dev/null 2>&1
+fi
+}
+
+# Dependencies
+dep () {
+	echo -ne "$okegreen" "Checking Dependencies ...."
+which wget > /dev/null 2>&1
+      if [ "$?" -eq "1" ]; then
+      echo "[$red x$okegreen ] Not Ok "
+      echo ""
+      echo -e "$red" "[x] Wget "
+      echo ""
+   echo -e "$red" "Wget Missing"
+echo ""
+echo -e "$yellow" "Try : apt-get install wget"
+exit 1
+fi  
+sleep 0.5 
+which wine > /dev/null 2>&1
+      if [ "$?" -eq "1" ]; then
+      echo "[$red x$okegreen ] Not Ok "
+      echo ""
+      echo -e "$red" "[x] Wine32 "
+      echo ""
+   echo -e "$red" "Wine Missing"
+echo ""
+echo -e "$yellow" "Try : apt-get install wine"
+exit 1
+else
+rm -f $log
+winearch32=$(winepath -u c:\\windows\\system32 | tee $log > /dev/null 2>&1)
+if ! grep system32 < "$log" > /dev/null 2>&1 ; then
+if grep syswow64 < "$log" > /dev/null 2>&1 ; then
+echo "[$red x$okegreen ] Not Ok "
+      echo ""
+echo "Detected Wine 64bit Arch"
+echo ""
+echo "Go to https://wiki.debian.org/Wine to know how to install wine32 on a 64bit machine"
+exit 1
+fi
+fi
+fi 
+which winbindd > /dev/null 2>&1
+      if [ "$?" -eq "1" ]; then
+      echo "[$red x$okegreen ] Not Ok "
+      echo ""
+   echo -e "$red" "Winbind Missing"
+echo ""
+echo -e "$yellow" "Try : apt-get install winbind"
+exit 1
+fi 
+sleep 0.5
+which nmap > /dev/null 2>&1
+      if [ "$?" -eq "1" ]; then
+      echo "[$red x$okegreen ] Not Ok "
+      echo ""
+   echo -e "$red" "Nmap Missing"
+echo ""
+echo -e "$yellow" "Try : apt-get install nmap"
+exit 1
+fi 
+sleep 0.5
+echo "[✔] Ok "
+sleep 2
+}
+
+srvstop () {
+winbservice="winbind"	
+if (( $(ps -ef | grep -v grep | grep $winbservice | wc -l) > 0 ))
+then
+echo ""
+echo -e "$okegreen""Stopping Winbind Service & Exiting"
+/etc/init.d/$winbservice stop >/dev/null 2>&1
+fi
+delf
+exit 1
+}
+namedpipe () {
+cp "$npskl" "$npout"
+sed -i -e "s/RHOST/$rhost/g" $npout	
+np=$(wine Namedpipetouch-2.0.0.exe)	
+echo "$np" > "$nplog"
+npok=$(grep "Pipe Found:" < $nplog | awk '{print$4}')
+if [[ ! -z "$npok" ]]
+then
+echo -e "$okegreen""* - Pipes Found on$yellow $rhost$yellow "
+cat $nplog | grep "Pipe Found:" | awk '{print$4}' | sed 's/[\PIPE\]//g' | tr "" "\n"
+else
+echo -e "$okegreen""* - Unable to find aditional smbpipes"
+fi
+srvstop	
+}	
+smbtouch () {
+cp "$stskl" "$stout"
+sed -i -e "s/RHOST/$rhost/g" $stout
+echo ""
+tools="cd $path/tools"
+echo -e "$orange""* - Launching Smbtouch on $okegreen $rhost"
+$tools
+st=$(timeout 6s wine Smbtouch-1.1.1.exe)
+echo "$st" > "$stlog"
+sbosl=$(grep -n "Target OS" < $stlog | tr ":" "\n" | sed -n 1p)
+osvar=$((sbosl+1))
+osout=$(sed -n "$osvar"p < $stlog | sed 's/^ *//')
+sbfl=$(grep "Touch failed" < $stlog)
+sbnv=$(grep "Target is not vulnerable" < $stlog)
+sbnvarch64=$(grep "64-bit" < $stlog | awk '{print$4}')
+sbnvarch32=$(grep "32-bit" < $stlog | awk '{print$4}')
+if [[ ! -z "$osout" ]]
+then
+echo ""
+echo -e "$okegreen""* - Target OS :$yellow $osout"
+fi
+if [[ ! -z "$sbnvarch32" ]]
+then
+echo ""
+echo -e "$okegreen""* - Target Architecture :$yellow $sbnvarch32"
+elif [[ ! -z "$sbnvarch64" ]]
+then
+echo ""
+echo -e "$okegreen""* - Target Achitecture :$yellow $sbnvarch64"
+fi
+if [[ ! -z "$sbfl" ]]
+then
+echo -e "$red""x - Target not Vulnerable"
+srvstop
+exit 1
+elif [[ ! -z "$sbnv" ]]
+then
+echo -e "$red""x - Target not Vulnerable"
+srvstop
+exit 1
+fi
+
+# Vulnerable to some exploit
+stvlndnfb=$(grep "DANE/FB" < "$stlog" | awk '{print$1}' | sed -n 1p)
+stvlnfb=$(grep "FB" < "$stlog" | awk '{print$1}' | sed -n 1p)
+stvlndn=$(grep "DANE" < "$stlog" | awk '{print$1}' | sed -n 1p)
+if [[ ! -z $stvlnfb ]]
+then
+echo -e "$okegreen""* - Vulnerable to : $yellow $stvlnfb $okegreen using : $yellow Fuzzbunch $okegreen injection method" 
+fi
+if [[ ! -z $stvlndn ]]
+then
+echo -e "$okegreen""* - Vulnerable to : $yellow $stvlndn $okegreen using : $yellow DanderSpritz $okegreen injection method" 
+fi
+if [[ ! -z $stvlndnfb ]]
+then
+echo -e "$okegreen""* - Vulnerable to : $yellow $stvlndnfb $okegreen using : $yellow DanderSpritz$okegreen &$yellow Fuzzbunch $okegreen injection method" 
+fi
+
+# checking for pipes
+stvlnpp=$(grep "Success!" < "$stlog" | awk '{print$2}' )
+echo ""
+if [[ ! -z "$stvlnpp" ]]
+then
+echo -e "$okegreen""* - Available pipes :$yellow $stvlnpp"
+fi
+echo -e "$orange""* - Launching Namedpipe on$okegreen $rhost"
+namedpipe
+}
+
+
+
+target () {
+echo -ne "$okegreen""Enter IP to check :$yellow ";tput sgr0
+read -r rhost
+inv=$(echo "$rhost" | grep [a-zA-Z] )
+if [[ ! -z "$inv" ]]
+then
+echo ""
+echo -e "$yellow" "Invalid IP" 
+sleep 3
+clear && logo && target
+fi
+nmpping=$(nmap $rhost -p 445)
+rst=$(echo "$nmpping" | grep "open")
+if [[ ! -z "$rst" ]]
+then
+smbtouch
+else
+echo -e "$yellow""$rhost $okegreen does not have port 445 opened"
+srvstop
+exit 1
+fi
+}
+
+intro && chkfls && delf && dep && servstart && logo && target
