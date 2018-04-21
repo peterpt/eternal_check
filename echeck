@@ -24,6 +24,8 @@ orange='\e[38;5;166m'
 vers="1.0"
 path=$(pwd)
 tools="cd $path/tools"
+tout="20s" # Timeout for smbtouch and namepipe processes in seconds when running
+# This means that if one of the executables get hanged then timeout var will kill them on that specific time
 
 # Output Logs
 log="$path/log"
@@ -49,8 +51,19 @@ stout="$path/tools/Smbtouch-1.1.1.xml"
 
 #   ---------END--------VARIABLES-------------------
 
-intro () {
-echo -e "$orange" "Eternal Check $vers just started"
+# CTRL+C Interrupt for scanner
+trap ctrl_c INT
+function ctrl_c() {
+srvstop
+}
+
+
+chknet () {
+echo -e "GET http://google.com HTTP/1.0\n\n" | nc google.com 80 > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+echo -e "$yellow" "Opps , not connected to Internet"
+exit 1
+fi	
 }
 
 delf () {
@@ -60,6 +73,11 @@ rm -rf "$stout" >/dev/null 2>&1
 rm -rf "$log" >/dev/null 2>&1	
 rm -rf "$stlog" >/dev/null 2>&1	
 rm -rf "$nmplog" >/dev/null 2>&1
+}
+
+intro () {
+delf
+echo -e "$orange" "Eternal Check $vers just started"
 }
 
 chkfls () {
@@ -131,6 +149,16 @@ echo -e "$yellow" "Try : apt-get install wget"
 exit 1
 fi  
 sleep 0.5 
+which nc > /dev/null 2>&1
+      if [ "$?" -eq "1" ]; then
+      echo "[$red x$okegreen ] Not Ok "
+      echo ""
+   echo -e "$red" "Netcat Missing"
+echo ""
+echo -e "$yellow" "Try : apt-get install netcat"
+exit 1
+fi 
+sleep 0.5 
 which wine > /dev/null 2>&1
       if [ "$?" -eq "1" ]; then
       echo "[$red x$okegreen ] Not Ok "
@@ -183,7 +211,7 @@ exit 1
 namedpipe () {
 cp "$npskl" "$npout"
 sed -i -e "s/RHOST/$rhost/g" $npout	
-np=$(wine Namedpipetouch-2.0.0.exe)	
+np=$(timeout "$tout" wine Namedpipetouch-2.0.0.exe)	
 echo "$np" > "$nplog"
 npok=$(grep "Pipe Found:" < $nplog | awk '{print$4}')
 if [[ ! -z "$npok" ]]
@@ -193,9 +221,10 @@ cat $nplog | grep "Pipe Found:" | awk '{print$4}' | sed 's/[\PIPE\]//g' | tr "" 
 else
 echo -e "$okegreen""* - Unable to find aditional smbpipes"
 fi
+exit 1
+
 srvstop	
 }	
-
 smbtouch () {
 cp "$stskl" "$stout"
 sed -i -e "s/RHOST/$rhost/g" $stout
@@ -203,7 +232,7 @@ echo ""
 tools="cd $path/tools"
 echo -e "$orange""* - Launching Smbtouch on $okegreen $rhost"
 $tools
-st=$(timeout 10s wine Smbtouch-1.1.1.exe)
+st=$(timeout "$tout" wine Smbtouch-1.1.1.exe)
 echo "$st" > "$stlog"
 sbosl=$(grep -n "Target OS" < $stlog | tr ":" "\n" | sed -n 1p)
 osvar=$((sbosl+1))
@@ -212,7 +241,12 @@ sbfl=$(grep "Touch failed" < $stlog)
 sbnv=$(grep "Target is not vulnerable" < $stlog)
 sbnvarch64=$(grep "64-bit" < $stlog | awk '{print$4}')
 sbnvarch32=$(grep "32-bit" < $stlog | awk '{print$4}')
-if [[ ! -z "$osout" ]]
+errort=$(sed -n "$osvar"p < $stlog | grep "SMB")
+if [[ ! -z "$errort" ]]
+then
+echo -e "$yellow" "Target is not vulnerable or have Linux OS"
+exit 1
+elif [[ ! -z "$osout" ]]
 then
 echo ""
 echo -e "$okegreen""* - Target OS :$yellow $osout"
@@ -269,6 +303,9 @@ namedpipe
 
 
 target () {
+	chknet
+	if [[ -z "$rhost" ]]
+	then
 echo -ne "$okegreen" "Enter IP to check :$yellow ";tput sgr0
 read -r rhost
 inv=$(echo "$rhost" | grep [a-zA-Z] )
@@ -289,6 +326,32 @@ echo -e "$yellow""$rhost $okegreen does not have port 445 opened"
 srvstop
 exit 1
 fi
+else
+inv=$(echo "$rhost" | grep [a-zA-Z] )
+if [[ ! -z "$inv" ]]
+then
+echo ""
+echo -e "$yellow" "Invalid IP" 
+rhost=""
+sleep 3
+clear && logo && target
+fi
+nmpping=$(nmap $rhost -p 445)
+rst=$(echo "$nmpping" | grep "open")
+if [[ ! -z "$rst" ]]
+then
+smbtouch
+else
+echo -e "$yellow""$rhost $okegreen does not have port 445 opened"
+srvstop
+exit 1
+fi
+fi
 }
-
-intro && chkfls && delf && dep && servstart && logo && target
+if [ -z "$1" ]
+then
+intro && chkfls && delf && dep && servstart && logo && target 
+else
+rhost="$1"
+intro && chkfls && delf && dep && servstart && logo && target 
+fi
