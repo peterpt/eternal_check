@@ -282,11 +282,11 @@ echo -e "$okegreen""* - Vulnerable to : $yellow $stvlnfb $okegreen using : $yell
 fi
 if [[ ! -z $stvlndn ]]
 then
-echo -e "$okegreen""* - Vulnerable to : $yellow $stvlndn $okegreen using : $yellow DanderSpritz $okegreen injection method" 
+echo -e "$okegreen""* - Vulnerable to : $yellow $stvlndn $okegreen using : $yellow DaringNeophyte $okegreen injection method" 
 fi
 if [[ ! -z $stvlndnfb ]]
 then
-echo -e "$okegreen""* - Vulnerable to : $yellow $stvlndnfb $okegreen using : $yellow DanderSpritz$okegreen &$yellow Fuzzbunch $okegreen injection method" 
+echo -e "$okegreen""* - Vulnerable to : $yellow $stvlndnfb $okegreen using : $yellow DaringNeophyte$okegreen &$yellow Fuzzbunch $okegreen injection method" 
 fi
 
 # checking for pipes
