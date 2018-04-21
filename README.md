@@ -31,3 +31,9 @@ https://wiki.debian.org/Wine to know how to install wine32 on a 64bit machine
 
 # Important
 * Do not expect much support or any at all 
+
+# Last Notes (References of these vulnerabilities)
+* https://blogs.forcepoint.com/security-labs/evasions-used-shadow-brokers-tools-danderspritz-and-doublepulsar-part-2-2
+* https://blogs.technet.microsoft.com/srd/2017/07/13/eternal-synergy-exploit-analysis/
+* https://blogs.technet.microsoft.com/srd/2017/06/29/eternal-champion-exploit-analysis/
+* https://en.wikipedia.org/wiki/EternalBlue
