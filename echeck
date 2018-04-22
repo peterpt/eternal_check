@@ -176,9 +176,9 @@ if ! grep system32 < "$log" > /dev/null 2>&1 ; then
 if grep syswow64 < "$log" > /dev/null 2>&1 ; then
 echo "[$red x$okegreen ] Not Ok "
       echo ""
-echo "Detected Wine 64bit Arch"
+echo -e "$yellow" "Detected Wine 64bit Arch"
 echo ""
-echo "Go to https://wiki.debian.org/Wine to know how to install wine32 on a 64bit machine"
+echo -e "$okegreen" "Go to$yellow https://wiki.debian.org/Wine$okegreen (to know how to install wine32 on a 64bit machine)"
 exit 1
 fi
 fi
@@ -193,7 +193,7 @@ echo -e "$yellow" "Try : apt-get install winbind"
 exit 1
 fi 
 sleep 0.5
-echo "[✔] Ok "
+echo -e "$$okegreen ""[✔] Ok "
 sleep 2
 }
 
