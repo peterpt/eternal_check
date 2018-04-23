@@ -51,12 +51,14 @@ stout="$path/tools/Smbtouch-1.1.1.xml"
 
 #   ---------END--------VARIABLES-------------------
 
-# CTRL+C Interrupt for scanner
+# CTRL+C when pressed will stop services and exit
 trap ctrl_c INT
 function ctrl_c() {
 srvstop
 }
 
+# Verifies for internet connection , however this routine will be removed 
+# because user may want to test its Lan and not having direct connection to web .
 
 chknet () {
 echo -e "GET http://google.com HTTP/1.0\n\n" | nc google.com 80 > /dev/null 2>&1
@@ -66,6 +68,7 @@ exit 1
 fi	
 }
 
+# Temporary files created during the execution of the tool
 delf () {
 rm -rf "$nplog" >/dev/null 2>&1
 rm -rf "$npout" >/dev/null 2>&1	
@@ -80,8 +83,8 @@ delf
 echo -e "$orange" "Eternal Check $vers just started"
 }
 
+# Verification if Fuzzbunch Executables and main xmls files for config exist 
 chkfls () {
-	
 if [[ ! -f "$npexe" ]]
 then
 echo "Incomplete package , (namedpipe exe) missing"
@@ -171,6 +174,9 @@ echo -e "$yellow" "Try : apt-get install wine"
 exit 1
 else
 rm -f $log
+
+# Verifies witch wine arch is installed on user station
+
 winearch32=$(winepath -u c:\\windows\\system32 | tee $log > /dev/null 2>&1)
 if ! grep system32 < "$log" > /dev/null 2>&1 ; then
 if grep syswow64 < "$log" > /dev/null 2>&1 ; then
@@ -197,6 +203,7 @@ echo -e "$$okegreen ""[✔] Ok "
 sleep 2
 }
 
+# Stop services and exit tool
 srvstop () {
 winbservice="winbind"	
 if (( $(ps -ef | grep -v grep | grep $winbservice | wc -l) > 0 ))
@@ -208,6 +215,13 @@ fi
 delf
 exit 1
 }
+
+# Named pipe function to search for vulnerable SMB pipes on target
+# Named pipe not only search for other default windows pipes , as also for a big list of possible altertative pipes
+# Antivirus pipes , Sql server pipes , etc ... , every program that connects to the network creates a pipe
+# and namedpipe tool checks that from a predetermided configured list .
+# The list of pipes to check are the default created by NSA until the time of the leaked package by Shadow Brokers
+
 namedpipe () {
 cp "$npskl" "$npout"
 sed -i -e "s/RHOST/$rhost/g" $npout	
@@ -222,9 +236,12 @@ else
 echo -e "$okegreen""* - Unable to find aditional smbpipes"
 fi
 exit 1
-
 srvstop	
 }	
+
+# Smbtouch verifies if the target ip is vulnerable to any of the exploits and also search for main windows pipes
+# if they are vulnerable , lsass , spoolss , browser  (basically the pipes that Windows have by default working)
+
 smbtouch () {
 cp "$stskl" "$stout"
 sed -i -e "s/RHOST/$rhost/g" $stout
@@ -301,7 +318,6 @@ namedpipe
 }
 
 
-
 target () {
 	chknet
 	if [[ -z "$rhost" ]]
@@ -316,6 +332,9 @@ echo -e "$yellow" "Invalid IP"
 sleep 3
 clear && logo && target
 fi
+
+# Quick checking with nmap on user provided ip 
+
 nmpping=$(nmap $rhost -p 445)
 rst=$(echo "$nmpping" | grep "open")
 if [[ ! -z "$rst" ]]
