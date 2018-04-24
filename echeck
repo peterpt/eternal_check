@@ -199,7 +199,7 @@ echo -e "$yellow" "Try : apt-get install winbind"
 exit 1
 fi 
 sleep 0.5
-echo -e "$$okegreen ""[✔] Ok "
+echo -e "$okegreen""[✔] Ok "
 sleep 2
 }
 
