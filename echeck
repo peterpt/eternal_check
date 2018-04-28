@@ -27,6 +27,7 @@ tools="cd $path/tools"
 tout="20s" # Timeout for smbtouch and namepipe processes in seconds when running
 # This means that if one of the executables get hanged then timeout var will kill them on that specific time
 
+tconf="0" # Target confirmation online 0 means not checked , 1 means checked
 # Output Logs
 log="$path/log"
 nmplog="$path/nmlog"
@@ -57,15 +58,20 @@ function ctrl_c() {
 srvstop
 }
 
-# Verifies for internet connection , however this routine will be removed 
-# because user may want to test its Lan and not having direct connection to web .
+# Verifies if target have port 445 opened using nmap before proceed
 
 chknet () {
-echo -e "GET http://google.com HTTP/1.0\n\n" | nc google.com 80 > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-echo -e "$yellow" "Opps , not connected to Internet"
-exit 1
-fi	
+tgt=$(nmap -Pn -p 445 $rhost )
+vrf=$(echo $tgt | grep "open")
+if [[ -z "$vrf" ]]
+then
+echo ""
+echo -e "$yellow""* -$red It looks that $rhost does not have Samba port 445 opened"
+sleep 5
+srvstop
+fi
+echo -e "$okegreen""* -$yellow$rhost$okegreen is online to be checked"
+tconf="1"
 }
 
 # Temporary files created during the execution of the tool
@@ -159,6 +165,16 @@ which nc > /dev/null 2>&1
    echo -e "$red" "Netcat Missing"
 echo ""
 echo -e "$yellow" "Try : apt-get install netcat"
+exit 1
+fi 
+sleep 0.5 
+which nmap > /dev/null 2>&1
+      if [ "$?" -eq "1" ]; then
+      echo "[$red x$okegreen ] Not Ok "
+      echo ""
+   echo -e "$red" "Network Map Missing"
+echo ""
+echo -e "$yellow" "Try : apt-get install nmap"
 exit 1
 fi 
 sleep 0.5 
@@ -319,7 +335,6 @@ namedpipe
 
 
 target () {
-	chknet
 	if [[ -z "$rhost" ]]
 	then
 echo -ne "$okegreen" "Enter IP to check :$yellow ";tput sgr0
@@ -334,17 +349,11 @@ clear && logo && target
 fi
 
 # Quick checking with nmap on user provided ip 
-
-nmpping=$(nmap $rhost -p 445)
-rst=$(echo "$nmpping" | grep "open")
-if [[ ! -z "$rst" ]]
+if [[ "$tconf" == "0" ]]
 then
+chknet
+fi 
 smbtouch
-else
-echo -e "$yellow""$rhost $okegreen does not have port 445 opened"
-srvstop
-exit 1
-fi
 else
 inv=$(echo "$rhost" | grep [a-zA-Z] )
 if [[ ! -z "$inv" ]]
@@ -355,16 +364,7 @@ rhost=""
 sleep 3
 clear && logo && target
 fi
-nmpping=$(nmap $rhost -p 445)
-rst=$(echo "$nmpping" | grep "open")
-if [[ ! -z "$rst" ]]
-then
 smbtouch
-else
-echo -e "$yellow""$rhost $okegreen does not have port 445 opened"
-srvstop
-exit 1
-fi
 fi
 }
 if [ -z "$1" ]
@@ -372,5 +372,5 @@ then
 intro && chkfls && delf && dep && servstart && logo && target 
 else
 rhost="$1"
-intro && chkfls && delf && dep && servstart && logo && target 
+intro && chkfls && delf && dep  && servstart && logo && chknet && tconf="1" && target 
 fi
