@@ -33,21 +33,25 @@ log="$path/log"
 nmplog="$path/nmlog"
 nplog="$path/npout"   # Named Pipe
 stlog="$path/stout"   # SMB Touch
+eglog="$path/stout"   # ErraticGopher
 # End logs
 
 # Main skeletons
 npskl="$path/xml/Namedpipetouch-2.0.0.Skeleton.xml"
 stskl="$path/xml/Smbtouch-1.1.1.Skeleton.xml"
+egskl="$path/xml/Erraticgophertouch-1.0.1.Skeleton.xml"
 # End Skeletons
 
 # Fuzzbunch Executables
 npexe="$path/tools/Namedpipetouch-2.0.0.exe"
 stexe="$path/tools/Smbtouch-1.1.1.exe"
+egexe="$path/tools/Erraticgophertouch-1.0.1.exe"
 # End Executables
 
 # Out Config
 npout="$path/tools/Namedpipetouch-2.0.0.xml"
 stout="$path/tools/Smbtouch-1.1.1.xml"
+egout="$path/tools/Erraticgophertouch-1.0.1.xml"
 # End Out Config
 
 #   ---------END--------VARIABLES-------------------
@@ -78,10 +82,12 @@ tconf="1"
 delf () {
 rm -rf "$nplog" >/dev/null 2>&1
 rm -rf "$npout" >/dev/null 2>&1	
+rm -rf "$egout" >/dev/null 2>&1	
 rm -rf "$stout" >/dev/null 2>&1	
 rm -rf "$log" >/dev/null 2>&1	
 rm -rf "$stlog" >/dev/null 2>&1	
 rm -rf "$nmplog" >/dev/null 2>&1
+rm -rf "$eglog" >/dev/null 2>&1
 }
 
 intro () {
@@ -99,6 +105,10 @@ elif [[ ! -f "$stexe" ]]
 then
 echo "Incomplete package , (smbtouch exe) missing"
 exit 1
+elif [[ ! -f "$egexe" ]]
+then
+echo "Incomplete package , (erraticgophertouch exe) missing"
+exit 1
 elif [[ ! -f "$npskl" ]]
 then
 echo "Incomplete package , (namedpipe skl) missing"
@@ -106,6 +116,10 @@ exit 1
 elif [[ ! -f "$stskl" ]]
 then
 echo "Incomplete package , (smbtouch skl) missing"
+exit 1
+elif [[ ! -f "$egskl" ]]
+then
+echo "Incomplete package , (erraticgophertouch skl) missing"
 exit 1
 fi
 
@@ -232,6 +246,23 @@ delf
 exit 1
 }
 
+# Erraticgopher exploits SMB V1 on Windows XP & Server 2003
+egtouch () {
+echo ""
+cp "$egskl" "$egout"
+sed -i -e "s/RHOST/$rhost/g" $egout	
+eg=$(timeout "$tout" wine Erraticgophertouch-1.0.1.exe)	
+echo "$eg" > "$eglog"
+egok=$(grep "target IS vulnerable" < $eglog)
+if [[ ! -z "$egok" ]]
+then
+echo -e "$okegreen""* -$yellow $rhost$okegreen is vulnerable to Erraticgopher Vulnerability "
+else
+echo -e "$okegreen""* -$yellow $rhost$okegreen is not vulnerable to Erraticgopher Vulnerability "
+fi
+srvstop	
+}	
+
 # Named pipe function to search for vulnerable SMB pipes on target
 # Named pipe not only search for other default windows pipes , as also for a big list of possible altertative pipes
 # Antivirus pipes , Sql server pipes , etc ... , every program that connects to the network creates a pipe
@@ -251,8 +282,9 @@ cat $nplog | grep "Pipe Found:" | awk '{print$4}' | sed 's/[\PIPE\]//g' | tr "" 
 else
 echo -e "$okegreen""* - Unable to find aditional smbpipes"
 fi
-exit 1
-srvstop	
+echo ""
+echo -e "$orange""* - Launching Erraticgopher on$okegreen $rhost"
+egtouch	
 }	
 
 # Smbtouch verifies if the target ip is vulnerable to any of the exploits and also search for main windows pipes
