@@ -258,7 +258,7 @@ if [[ ! -z "$egok" ]]
 then
 echo -e "$okegreen""* -$yellow $rhost$okegreen is vulnerable to Erraticgopher Vulnerability "
 else
-echo -e "$okegreen""* -$yellow $rhost$okegreen is not vulnerable to Erraticgopher Vulnerability "
+echo -e "$okegreen""* -$yellow $rhost$okegreen is not vulnerable to$yellow ERRATICGOPHER$okegreen Vulnerability "
 fi
 srvstop	
 }	
