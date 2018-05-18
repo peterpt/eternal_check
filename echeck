@@ -261,7 +261,7 @@ exit 1
 }
 
 eglvr () {
-echo -e "$orange""* - Launching Eaglelever on$okegreen $rhost"	
+echo -e "$orange""* - Launching Eagerlever on$okegreen $rhost"	
 rm -rf $path/tools/*.log >/dev/null 2>&1
 lch=$(timeout "$tout" wine "elv.exe" -r 2 -i $rhost -p $rport -t 1 -b 3 -rpc >/dev/null 2>&1)
 lgfl=$(ls $path/tools/*.log | awk '{print$1}')
@@ -277,7 +277,7 @@ then
 echo -e "$okegreen""* -$yellow $rhost$okegreen is not vulnerable to$yellow Eagerlever$okegreen Vulnerability"
 sleep 4
 else
-echo -e "$okegreen""* -$yellow $rhost$okegreen is vulnerable to$yellow Eagerlever Vulnerability"
+echo -e "$okegreen""* -$yellow $rhost$okegreen is vulnerable to$yellow Eagerlever$okegreen Vulnerability"
 sleep 4
 fi
 srvstop
