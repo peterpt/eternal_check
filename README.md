@@ -15,6 +15,7 @@
 
 # Eternal Check Running (Video)
 * Eternal Check 1.0 : https://www.youtube.com/watch?v=rQBCELDPiok
+* Eternal Check 1.1 : https://www.youtube.com/watch?v=SqIBmAx-Llg
 
 # Requirements
 
