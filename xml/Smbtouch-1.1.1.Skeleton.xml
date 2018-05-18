@@ -9,7 +9,7 @@
 </t:parameter>
 <t:parameter name="TargetPort" description="Port used by the SMB service" type="TcpPort" format="Scalar" valid="true">
 <t:default>445</t:default>
-<t:value>445</t:value>
+<t:value>RPORT</t:value>
 </t:parameter>
 <t:parameter name="RedirectedTargetIp" description="Physical (redirected) target IP" type="IPv4" format="Scalar" hidden="true" required="false"></t:parameter>
 <t:parameter name="RedirectedTargetPort" description="Physical (redirected) target port" type="TcpPort" format="Scalar" hidden="true" required="false"></t:parameter>

@@ -1,7 +1,7 @@
 <t:config xmlns:t="tc0" id="36d1ffadd2b385b2a8a5498a6e05825e8ab97825" configversion="1.0.1.0" name="Erraticgophertouch" version="1.0.1">
 <t:inputparameters>
 <t:parameter name="TargetIp" description="Target IP Address" type="IPv4" format="Scalar" valid="true" value="RHOST"></t:parameter>
-<t:parameter name="TargetPort" description="Port used by the MSRPC service. Typically 445 (SMB), 139 not available for ERGO" type="TcpPort" format="Scalar" default="445" valid="true" value="445"></t:parameter>
+<t:parameter name="TargetPort" description="Port used by the MSRPC service. Typically 445 (SMB), 139 not available for ERGO" type="TcpPort" format="Scalar" default="445" valid="true" value="RPORT"></t:parameter>
 </t:inputparameters>
 <t:outputparameters>
 <t:parameter name="DimsvcEnabled" description="" type="Boolean" format="Scalar"></t:parameter>

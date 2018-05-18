@@ -5,7 +5,7 @@
 #######################################################
 
 # Eternal check verifies if a supposed ip is vulnerable to
-# Eternal Blue / Eternal Romance / Eternal Champion / Eternal Synergy
+# Eternal Blue / Eternal Romance / Eternal Champion / Eternal Synergy / Erraticgopher / EagleLever
 # Smb Vulnerabily 
 # https://www.rapid7.com/db/vulnerabilities/msft-cve-2017-0145
 # https://www.rapid7.com/db/modules/exploit/windows/smb/ms17_010_eternalblue
@@ -21,19 +21,20 @@ BlueF='\e[1;34m' #Biru
 RESET="\033[00m" #normal
 orange='\e[38;5;166m'
 #   --------------Variables------------------
-vers="1.0"
+vers="1.1"
 path=$(pwd)
 tools="cd $path/tools"
 tout="20s" # Timeout for smbtouch and namepipe processes in seconds when running
 # This means that if one of the executables get hanged then timeout var will kill them on that specific time
 
+rport="445"
 tconf="0" # Target confirmation online 0 means not checked , 1 means checked
 # Output Logs
 log="$path/log"
 nmplog="$path/nmlog"
 nplog="$path/npout"   # Named Pipe
 stlog="$path/stout"   # SMB Touch
-eglog="$path/stout"   # ErraticGopher
+eglog="$path/egout"   # ErraticGopher
 # End logs
 
 # Main skeletons
@@ -46,6 +47,7 @@ egskl="$path/xml/Erraticgophertouch-1.0.1.Skeleton.xml"
 npexe="$path/tools/Namedpipetouch-2.0.0.exe"
 stexe="$path/tools/Smbtouch-1.1.1.exe"
 egexe="$path/tools/Erraticgophertouch-1.0.1.exe"
+elexe="$path/tools/elv.exe"
 # End Executables
 
 # Out Config
@@ -69,12 +71,19 @@ tgt=$(nmap -Pn -p 445 $rhost )
 vrf=$(echo $tgt | grep "open")
 if [[ -z "$vrf" ]]
 then
+tgt=$(nmap -Pn -p 139 $rhost )
+vrf=$(echo $tgt | grep "open")
+if [[ -z "$vrf" ]]
+then
 echo ""
-echo -e "$yellow""* -$red It looks that $rhost does not have Samba port 445 opened"
+echo -e "$yellow""* -$red It looks that $rhost does not have Netbios port 139 or Samba port 445 opened"
 sleep 5
 srvstop
+else
+rport="139"
 fi
-echo -e "$okegreen""* -$yellow$rhost$okegreen is online to be checked"
+fi
+echo -e "$okegreen""* -$yellow$rhost$okegreen is online to be checked at TCP port $rport"
 tconf="1"
 }
 
@@ -88,6 +97,7 @@ rm -rf "$log" >/dev/null 2>&1
 rm -rf "$stlog" >/dev/null 2>&1	
 rm -rf "$nmplog" >/dev/null 2>&1
 rm -rf "$eglog" >/dev/null 2>&1
+rm -rf "$path/tools/*.log" >/dev/null 2>&1
 }
 
 intro () {
@@ -108,6 +118,10 @@ exit 1
 elif [[ ! -f "$egexe" ]]
 then
 echo "Incomplete package , (erraticgophertouch exe) missing"
+exit 1
+elif [[ ! -f "$elexe" ]]
+then
+echo "Incomplete package , (eaglelever exe) missing"
 exit 1
 elif [[ ! -f "$npskl" ]]
 then
@@ -246,11 +260,36 @@ delf
 exit 1
 }
 
+eglvr () {
+echo -e "$orange""* - Launching Eaglelever on$okegreen $rhost"	
+rm -rf $path/tools/*.log >/dev/null 2>&1
+lch=$(timeout "$tout" wine "elv.exe" -r 2 -i $rhost -p $rport -t 1 -b 3 -rpc >/dev/null 2>&1)
+lgfl=$(ls $path/tools/*.log | awk '{print$1}')
+if [[ ! -f "$lgfl" ]]
+then
+echo -e "$okegreen""* - $yellow Unable to find log file from eagerlever touch"
+sleep 4
+srvstop
+fi
+nv=$(grep "Target is vulnerable to EAGERLEVER" < $lgfl)
+if [[ -z "$nv" ]]
+then
+echo -e "$okegreen""* -$yellow $rhost$okegreen is not vulnerable to$yellow Eagerlever$okegreen Vulnerability"
+sleep 4
+else
+echo -e "$okegreen""* -$yellow $rhost$okegreen is vulnerable to$yellow Eagerlever Vulnerability"
+sleep 4
+fi
+srvstop
+}             	
+
 # Erraticgopher exploits SMB V1 on Windows XP & Server 2003
 egtouch () {
+echo -e "$orange""* - Launching Erraticgopher on$okegreen $rhost"	
 echo ""
 cp "$egskl" "$egout"
-sed -i -e "s/RHOST/$rhost/g" $egout	
+sed -i -e "s/RHOST/$rhost/g" $egout
+sed -i -e "s/RPORT/$rport/g" $egout	
 eg=$(timeout "$tout" wine Erraticgophertouch-1.0.1.exe)	
 echo "$eg" > "$eglog"
 egok=$(grep "target IS vulnerable" < $eglog)
@@ -260,7 +299,8 @@ echo -e "$okegreen""* -$yellow $rhost$okegreen is vulnerable to Erraticgopher Vu
 else
 echo -e "$okegreen""* -$yellow $rhost$okegreen is not vulnerable to$yellow ERRATICGOPHER$okegreen Vulnerability "
 fi
-srvstop	
+echo ""
+eglvr
 }	
 
 # Named pipe function to search for vulnerable SMB pipes on target
@@ -270,8 +310,10 @@ srvstop
 # The list of pipes to check are the default created by NSA until the time of the leaked package by Shadow Brokers
 
 namedpipe () {
+echo -e "$orange""* - Launching Namedpipe on$okegreen $rhost"	
 cp "$npskl" "$npout"
 sed -i -e "s/RHOST/$rhost/g" $npout	
+sed -i -e "s/RPORT/$rport/g" $npout	
 np=$(timeout "$tout" wine Namedpipetouch-2.0.0.exe)	
 echo "$np" > "$nplog"
 npok=$(grep "Pipe Found:" < $nplog | awk '{print$4}')
@@ -283,7 +325,6 @@ else
 echo -e "$okegreen""* - Unable to find aditional smbpipes"
 fi
 echo ""
-echo -e "$orange""* - Launching Erraticgopher on$okegreen $rhost"
 egtouch	
 }	
 
@@ -293,6 +334,7 @@ egtouch
 smbtouch () {
 cp "$stskl" "$stout"
 sed -i -e "s/RHOST/$rhost/g" $stout
+sed -i -e "s/RPORT/$rport/g" $stout
 echo ""
 tools="cd $path/tools"
 echo -e "$orange""* - Launching Smbtouch on $okegreen $rhost"
@@ -309,8 +351,7 @@ sbnvarch32=$(grep "32-bit" < $stlog | awk '{print$4}')
 errort=$(sed -n "$osvar"p < $stlog | grep "SMB")
 if [[ ! -z "$errort" ]]
 then
-echo -e "$yellow" "Target is not vulnerable or have Linux OS"
-exit 1
+egtouch
 elif [[ ! -z "$osout" ]]
 then
 echo ""
@@ -327,14 +368,14 @@ echo -e "$okegreen""* - Target Achitecture :$yellow $sbnvarch64"
 fi
 if [[ ! -z "$sbfl" ]]
 then
-echo -e "$red""x - Target not Vulnerable"
-srvstop
-exit 1
+echo -e "$red""x - Unable to smbtouch on $rhost"
+echo ""
+namedpipe
 elif [[ ! -z "$sbnv" ]]
 then
-echo -e "$red""x - Target not Vulnerable"
-srvstop
-exit 1
+echo -e "$red""x - Unable to smbtouch on $rhost"
+echo ""
+namedpipe
 fi
 
 # Vulnerable to some exploit
@@ -361,7 +402,6 @@ if [[ ! -z "$stvlnpp" ]]
 then
 echo -e "$okegreen""* - Available pipes :$yellow $stvlnpp"
 fi
-echo -e "$orange""* - Launching Namedpipe on$okegreen $rhost"
 namedpipe
 }
 
