@@ -6,6 +6,7 @@
 - Eternal champion 
 - Eternal synergy
 - Erraticgopher SMB v1 Exploit (Windows XP & Server 2003)
+- Eagerlever SMB v1 Exploit (Windows XP & 2000)
 
 
 # Screenshots
