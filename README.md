@@ -1,3 +1,5 @@
+# Project moved to : https://gitlab.com/peterpt/eternal_check
+
 ## Eternal Check
 
 * Eternal Check verifies if an ip is vulnerable to the smb vulnerabilities 
