@@ -1,0 +1,23 @@
+<t:config xmlns:t="tc0" id="cbe9b627fe881b0f5fe6122af36fe6234935c7e7" configversion="2.1.0.0" name="Rpctouch" version="2.1.0">
+<t:inputparameters>
+<t:parameter name="NetworkTimeout" description="Timeout for blocking network calls (in seconds).  Use -1 for no timeout." type="S16" format="Scalar" default="60" valid="true" value="60"></t:parameter>
+<t:parameter name="TargetIp" description="Target IP Address" type="IPv4" format="Scalar" valid="true" value="RHOST"></t:parameter>
+<t:parameter name="TargetPort" description="Port used by the MSRPC service. Typically 445 (SMB) or 139 (NBT)" type="TcpPort" format="Scalar" default="445" valid="true" value="RPORT"></t:parameter>
+<t:parameter name="NetBIOSName" description="Name to use if running touch over NBT, Vista and above require real hostname." type="String" format="Scalar" default="*SMBSERVER" valid="true" value="*SMBSERVER"></t:parameter>
+<t:parameter name="TouchLanguage" description="Run language touch against RPC spooler service." type="Boolean" format="Scalar" default="False" valid="true" value="false"></t:parameter>
+<t:parameter name="TouchArchitecture" description="Run architecture touch against SMB via a memory disclosure bug." type="Boolean" format="Scalar" default="False" valid="true" value="false"></t:parameter>
+<t:paramchoice name="Protocol" description="Protocol to connect to target with. Touches will vary with protocol." default="SMB" value="PROT">
+<t:paramgroup name="SMB" description="SMB over TCP"></t:paramgroup>
+<t:paramgroup name="NBT" description="Netbios over TCP"></t:paramgroup>
+</t:paramchoice>
+</t:inputparameters>
+<t:outputparameters>
+<t:parameter name="Protocol" description="" type="String" format="Scalar"></t:parameter>
+<t:parameter name="Target" description="" type="String" format="Scalar"></t:parameter>
+<t:parameter name="TargetString" description="" type="String" format="Scalar"></t:parameter>
+<t:parameter name="TargetDWORD" description="" type="U32" format="Scalar"></t:parameter>
+<t:parameter name="Language" description="" type="String" format="Scalar"></t:parameter>
+<t:parameter name="NetworkTimeout" description="" type="S16" format="Scalar"></t:parameter>
+<t:parameter name="Contract" description="The contract fulfilled by this plugin" type="String" format="Scalar" valid="true" value="StagedUpload"></t:parameter>
+</t:outputparameters>
+</t:config>

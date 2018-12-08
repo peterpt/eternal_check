@@ -1,6 +1,4 @@
-# Project moved to : https://gitlab.com/peterpt/eternal_check
-
-## Eternal Check
+## Eternal Check 2.0
 
 * Eternal Check verifies if an ip is vulnerable to the smb vulnerabilities 
 - Eternal Blue 
@@ -10,10 +8,13 @@
 - Erraticgopher SMB v1 Exploit (Windows XP & Server 2003)
 - Eagerlever SMB v1 Exploit (Windows XP & 2000)
 
-
 # Screenshots
-<img src="https://s14.postimg.cc/nerjpjatt/echeck.jpg" width="55%"></img>
-* <img src="https://s14.postimg.cc/sz4108ua9/echeck2.jpg" width="25%"></img><img src="https://s14.postimg.cc/4vd9byjj5/echeck3.jpg" width="25%"></img><img src="https://s14.postimg.cc/slcha227l/erratic.jpg" width="25%"></img><img src="https://s31.postimg.cc/4mwf576ez/echeck11.jpg" width="25%"></img>
+<img src="https://s22.postimg.cc/ypjtt6wfl/echeck20.png" width="55%"></img>
+* <img src="https://s22.postimg.cc/6pfq90nv5/echeck2-2003.png" width="25%"></img><img src="https://s22.postimg.cc/v5xw3i41d/echeck2.png" width="25%"></img><img src="https://s22.postimg.cc/n1udc79hd/echeck2b.png" width="25%"></img>
+
+# Added in 2.0
+* Architouch (uses port 49152 "In case opened" in remote ip to retrieve OS architecture)
+* RpcTouch (uses also SMB port to retrieve OS version)
 
 # Eternal Check Running (Video)
 * Eternal Check 1.0 : https://www.youtube.com/watch?v=rQBCELDPiok
@@ -44,3 +45,6 @@ https://wiki.debian.org/Wine to know how to install wine32 on a 64bit machine
 * https://blogs.technet.microsoft.com/srd/2017/07/13/eternal-synergy-exploit-analysis/
 * https://blogs.technet.microsoft.com/srd/2017/06/29/eternal-champion-exploit-analysis/
 * https://en.wikipedia.org/wiki/EternalBlue
+
+# Last version 1.1
+* https://gitlab.com/peterpt/eternal_check/tree/Eternal_Check-1.1

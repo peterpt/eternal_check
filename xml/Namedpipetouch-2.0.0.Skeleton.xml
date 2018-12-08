@@ -19,7 +19,7 @@
 </t:parameter>
 <t:paramchoice name="Protocol" description="SMB (default port 445) or NBT (default port 139)">
 <t:default>SMB</t:default>
-<t:value>SMB</t:value>
+<t:value>PROT</t:value>
 <t:paramgroup name="SMB" description="">
 <t:parameter name="UsingNbt" description="Boolean stating to use Nbt or not" type="Boolean" format="Scalar" hidden="true" valid="true">
 <t:default>0</t:default>
