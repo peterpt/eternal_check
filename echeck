@@ -161,7 +161,7 @@ echo -e "$orange""*$okegreen      ██ ▄▄██▀▐█▐▀▀▪▄█
 echo -e "$orange""*$okegreen      ▐███▌██▌▐▀▐█▄▄▌▐███▌▐█.█▌        $orange *"
 echo -e "$orange""*$okegreen      ·▀▀▀ ▀▀▀ · ▀▀▀ ·▀▀▀ ·▀  ▀  $yellow $vers$orange   *" 
 echo -e "$orange""******************************************"
-echo -e "$orange""*$okegreen      http://gitlab.com/peterpt         $orange*"
+echo -e "$orange""*$okegreen      http://github.com/peterpt         $orange*"
 echo -e "$orange""******************************************"
 }
 
